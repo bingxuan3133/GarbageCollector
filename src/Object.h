@@ -9,6 +9,7 @@ struct Object {
   void (*free)(Object *);
 };
 
-void dumpObject(Object *obj);
+void objectDump(Object *obj);
+Object *objectAssign(Object *obj);
 
 #endif // Object_H

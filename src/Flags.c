@@ -1,10 +1,25 @@
 #include "Flags.h"
 
-void setMarkBit(Object *obj) {}
-void clearMarkBit(Object *obj) {}
+void setMarkBit(Object *obj) {
+  obj->flag |= MARK;
+}
 
-void setKeepStartBit(Object *obj) {}
-void clearKeepStartBit(Object *obj) {}
+void clearMarkBit(Object *obj) {
+  obj->flag &= ~MARK;
+}
 
-void setKeepFollowBit(Object *obj) {}
-void clearKeepFollowBit(Object *obj) {}
+void setKeepStartBit(Object *obj) {
+  obj->flag |= KEEPSTART;
+}
+
+void clearKeepStartBit(Object *obj) {
+  obj->flag &= ~KEEPSTART;
+}
+
+void setKeepFollowBit(Object *obj) {
+  obj->flag |= KEEPFOLLOW;
+}
+
+void clearKeepFollowBit(Object *obj) {
+  obj->flag &= ~KEEPFOLLOW;
+}

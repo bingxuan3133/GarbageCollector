@@ -9,9 +9,10 @@ struct ObjectA {
   int reference;
   int flag;
   void (*free)(Object *);
-  ObjectA *ptrA;
+  Object *ptrA;
 };
 
-void freeObjectA(Object *obj);
+ObjectA *objectANew();
+void objectAFree(Object *obj);
 
 #endif // ObjectA_H

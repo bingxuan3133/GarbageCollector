@@ -3,7 +3,7 @@
 #include "GarbageCollector.h"
 #include "Flags.h"
 
-void dumpObject(Object *obj) {
+void objectDump(Object *obj) {
   printf("%d:", obj->reference);
   if(getMarkBit(obj) == 1)
     printf("marked:");
@@ -13,4 +13,10 @@ void dumpObject(Object *obj) {
     printf("kept\n");
   else
     printf("unkept\n");
+}
+
+Object *objectAssign(Object *obj) {
+  obj->reference++;
+  
+  return obj;
 }

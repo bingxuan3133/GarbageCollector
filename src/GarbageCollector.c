@@ -17,6 +17,8 @@ void (*gc_free)(Object *);
 void phase1Mark(Object *obj) {
   obj->reference--;
   
+  printf("%p\n", obj);
+  
   if(getMarkBit(obj) == 1) {
     return;
   } else {
@@ -38,6 +40,7 @@ void phase2Mark(Object *obj) {
     setKeepFollowBit(obj);
   } else if(obj->reference > 0) {
     setKeepStartBit(obj);
+    previousKeepBit = 1;
   }
 
   if(getMarkBit(obj) == 1) {
