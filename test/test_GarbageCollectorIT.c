@@ -6,6 +6,7 @@
 #include "Flags.h"
 #include "Object.h"
 #include "ObjectA.h"
+#include "ObjectB.h"
 #include "gc_free.h"
 #include "object_free.h"
 #include "mock_free.h"
@@ -91,6 +92,44 @@ void test_phase1Mark_case2(void) {
   TEST_ASSERT_EQUAL_Object(0, 0, object1);
   TEST_ASSERT_EQUAL_Object(0, 0, object2);
   TEST_ASSERT_EQUAL_Object(1, 0, object3);
+  TEST_ASSERT_EQUAL_Object(0, 0, object4);
+
+  free(object1);
+  free(object2);
+  free(object3);
+  free(object4);
+}
+
+/*
+ *  ptr -> object1 -> object2 -> object3
+ *                ^      ^      /
+ *                 \     |     v
+ *                    object4
+ */
+void test_phase1Mark_case3(void) {
+	Object *ptr;
+  
+  ObjectA *object1 = objectANew();
+  ObjectA *object2 = objectANew();
+  ObjectA *object3 = objectANew();
+  ObjectB *object4 = objectBNew();
+
+  ptr = objectAssign((Object *)object1);
+  object1->ptrA = objectAssign((Object *)object2);
+  object2->ptrA = objectAssign((Object *)object3);
+  object3->ptrA = objectAssign((Object *)object4);
+  object4->ptrB1 = objectAssign((Object *)object2);
+  object4->ptrB2 = objectAssign((Object *)object1);
+
+  gc_free = phase1Mark;
+  
+  // Call S.U.T.
+  _gc_free((Object *)ptr);
+
+  // Tests
+  TEST_ASSERT_EQUAL_Object(0, 0, object1);
+  TEST_ASSERT_EQUAL_Object(0, 0, object2);
+  TEST_ASSERT_EQUAL_Object(0, 0, object3);
   TEST_ASSERT_EQUAL_Object(0, 0, object4);
 
   free(object1);
@@ -224,15 +263,15 @@ void test_phase2Mark_case1(void) {
   _gc_free((Object *)ptr);
 
   // Tests
-  // TEST_ASSERT_EQUAL_Object(0, 0, object1);
-  // TEST_ASSERT_EQUAL_Object(0, 0, object2);
-  // TEST_ASSERT_EQUAL_Object(0, 0, object3);
-  // TEST_ASSERT_EQUAL_Object(0, 0, object4);
+  TEST_ASSERT_EQUAL_Object(0, 0, object1);
+  TEST_ASSERT_EQUAL_Object(0, 0, object2);
+  TEST_ASSERT_EQUAL_Object(0, 0, object3);
+  TEST_ASSERT_EQUAL_Object(0, 0, object4);
 
-  // free(object1);
-  // free(object2);
-  // free(object3);
-  // free(object4);
+  free(object1);
+  free(object2);
+  free(object3);
+  free(object4);
 }
 
 /*
@@ -270,6 +309,48 @@ void test_phase2Mark_case2(void) {
   TEST_ASSERT_EQUAL_Object(1, KEEPSTART, object3);
   TEST_ASSERT_EQUAL_Object(0, KEEPFOLLOW, object4);
   TEST_ASSERT_EQUAL(0, previousKeepBit);
+
+  free(object1);
+  free(object2);
+  free(object3);
+  free(object4);
+}
+
+/*
+ *  ptr -> object1 -> object2 -> object3
+ *                ^      ^      /
+ *                 \     |     v
+ *                    object4
+ */
+void test_phase2Mark_case3(void) {
+	Object *ptr;
+  
+  ObjectA *object1 = objectANew();
+  ObjectA *object2 = objectANew();
+  ObjectA *object3 = objectANew();
+  ObjectB *object4 = objectBNew();
+
+  ptr = objectAssign((Object *)object1);
+  object1->ptrA = objectAssign((Object *)object2);
+  object2->ptrA = objectAssign((Object *)object3);
+  object3->ptrA = objectAssign((Object *)object4);
+  object4->ptrB1 = objectAssign((Object *)object2);
+  object4->ptrB2 = objectAssign((Object *)object1);
+
+  previousKeepBit = 0;
+  
+  gc_free = phase1Mark;
+  _gc_free((Object *)ptr);
+  gc_free = phase2Mark;
+  
+  // Call S.U.T.
+  _gc_free((Object *)ptr);
+
+  // Tests
+  TEST_ASSERT_EQUAL_Object(0, 0, object1);
+  TEST_ASSERT_EQUAL_Object(0, 0, object2);
+  TEST_ASSERT_EQUAL_Object(0, 0, object3);
+  TEST_ASSERT_EQUAL_Object(0, 0, object4);
 
   free(object1);
   free(object2);
@@ -479,6 +560,55 @@ void test_phase3Sweep_case2(void) {
   free(object4);
 }
 
+/*
+ *  ptr -> object1 -> object2 -> object3
+ *                ^      ^      /
+ *                 \     |     v
+ *                    object4
+ */
+void test_phase3Sweep_case3(void) {
+	Object *ptr;
+  
+  ObjectA *object1 = objectANew();
+  ObjectA *object2 = objectANew();
+  ObjectA *object3 = objectANew();
+  ObjectB *object4 = objectBNew();
+
+  ptr = objectAssign((Object *)object1);
+  object1->ptrA = objectAssign((Object *)object2);
+  object2->ptrA = objectAssign((Object *)object3);
+  object3->ptrA = objectAssign((Object *)object4);
+  object4->ptrB1 = objectAssign((Object *)object2);
+  object4->ptrB2 = objectAssign((Object *)object1);
+
+  previousKeepBit = 0;
+  
+  // mock free()
+  _free_Expect(object4);
+  _free_Expect(object3);
+  _free_Expect(object2);
+  _free_Expect(object1);  
+  
+  gc_free = phase1Mark;
+  _gc_free((Object *)ptr);
+  gc_free = phase2Mark;
+  _gc_free((Object *)ptr);
+  gc_free = phase3Sweep;
+  
+  // Call S.U.T.
+  _gc_free((Object *)ptr);
+
+  // Tests
+  TEST_ASSERT_EQUAL_Object(0, 0, object1);
+  TEST_ASSERT_EQUAL_Object(0, 0, object2);
+  TEST_ASSERT_EQUAL_Object(0, 0, object3);
+  TEST_ASSERT_EQUAL_Object(0, 0, object4);
+
+  free(object1);
+  free(object2);
+  free(object3);
+  free(object4);
+}
 
 /*
  *                                 ptr2
