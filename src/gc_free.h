@@ -3,6 +3,6 @@
 
 #include "Object.h"
 
-void _gc_free(Object *obj);
+void *_gc_free(Object *obj);
 
 #endif // gc_free_H

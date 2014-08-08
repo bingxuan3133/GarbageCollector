@@ -17,6 +17,6 @@ ObjectA *objectANew() {
 
 void objectAFree(Object *obj) {
   if(((ObjectA *)obj)->ptrA != NULL) {
-    _gc_free((Object *)((ObjectA *)obj)->ptrA);
+    ((ObjectA *)obj)->ptrA = _gc_free((Object *)((ObjectA *)obj)->ptrA);
   }
 }

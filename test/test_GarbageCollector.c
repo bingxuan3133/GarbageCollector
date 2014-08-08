@@ -35,6 +35,8 @@ void test_phase1Mark(void) {
   
   // Mocking
   setMarkBit_Expect((Object *)&object);
+  clearKeepStartBit_Expect((Object *)&object);
+  clearKeepFollowBit_Expect((Object *)&object);
   _object_free_Expect((Object *)&object);
   clearMarkBit_Expect((Object *)&object);
   
@@ -54,6 +56,8 @@ void test_phase1Mark_given_reference_is_2_should_reduce_reference_to_1(void) {
   
   // Mocking
   setMarkBit_Expect((Object *)&object);
+  clearKeepStartBit_Expect((Object *)&object);
+  clearKeepFollowBit_Expect((Object *)&object);
   _object_free_Expect((Object *)&object);
   clearMarkBit_Expect((Object *)&object);
   
@@ -185,6 +189,7 @@ void test_phase3Sweep_should_sweep_unkept_object(void) {
   setMarkBit_Expect((Object *)&object);
   _object_free_Expect((Object *)&object);
   clearMarkBit_Expect((Object *)&object);
+  _object_free_Expect((Object *)&object);
   _free_Expect(&object);
   
   // Call S.U.T.
@@ -205,7 +210,6 @@ void test_phase3Sweep_should_not_sweep_KEEPSTART_object_and_add_1_on_its_referen
   setMarkBit_Expect((Object *)&object);
   _object_free_Expect((Object *)&object);
   clearMarkBit_Expect((Object *)&object);
-  clearKeepStartBit_Expect((Object *)&object);
   
   // Call S.U.T.
   _gc_free((Object *)ptr);
@@ -225,8 +229,7 @@ void test_phase3Sweep_should_not_sweep_KEEPFOLLOW_object_and_add_1_on_its_refere
   setMarkBit_Expect((Object *)&object);
   _object_free_Expect((Object *)&object);
   clearMarkBit_Expect((Object *)&object);
-  clearKeepFollowBit_Expect((Object *)&object);
-  
+
   // Call S.U.T.
   _gc_free((Object *)ptr);
   
@@ -245,8 +248,7 @@ void test_phase3Sweep_should_not_sweep_object_if_previousKeepBit_is_1(void) {
   setMarkBit_Expect((Object *)&object);
   _object_free_Expect((Object *)&object);
   clearMarkBit_Expect((Object *)&object);
-  clearKeepStartBit_Expect((Object *)&object);
-  
+
   // Call S.U.T.
   _gc_free((Object *)ptr);
 
