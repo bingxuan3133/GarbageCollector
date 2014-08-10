@@ -17,6 +17,8 @@ void *(*gc_free)(Object *);  // function pointer to run 3 phases of garbage coll
  *  obj     object that is going to be free (or not free depends on its condition)
  */
 void freeObject(Object *obj) {
+  previousKeepBit = 0;
+  
   gc_free = phase1Mark;
   _gc_free((Object *)obj);
   gc_free = phase2Mark;
