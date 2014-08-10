@@ -5,6 +5,17 @@
 
 typedef struct ObjectB ObjectB;
 
+/** 
+ * User should include this 3 elements (with correct sequence) at the top in any struct of the object they wanted to create:
+ *
+ * int reference;
+ * int flag;
+ * void (*free)(Object *);
+ */
+
+/** 
+ * This is an example of ObjectB struct
+ */
 struct ObjectB {
   int reference;
   int flag;

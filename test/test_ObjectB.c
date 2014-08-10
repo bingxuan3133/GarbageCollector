@@ -29,6 +29,9 @@ void test_objectBNew_should_create_objectB_properly(void) {
   free(object);
 }
 
+//==================
+// Test objectBFree
+//==================
 /*
  *  ptr -> object1 -> object2
  */
@@ -40,8 +43,7 @@ void test_freeObjectB_walk_thru_object1_to_object2(void) {
 
   ptr = &object1;
   gc_free = phase1Mark;
-  
-  // Test object before recursion
+
   _gc_free_ExpectAndReturn((Object *)&object2, &object2);
   _gc_free_ExpectAndReturn((Object *)&object3, &object3);
   

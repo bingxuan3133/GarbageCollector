@@ -3,6 +3,7 @@
 #include "Object.h"
 #include "GarbageCollector.h"
 #include "Flags.h"
+#include "gc_free.h"
 #include "object_free.h"
 #include "free.h"
 

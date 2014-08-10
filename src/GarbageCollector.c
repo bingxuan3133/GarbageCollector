@@ -6,19 +6,40 @@
 #include "free.h"
 #include "gc_free.h"
 
-int previousKeepBit;
-void *(*gc_free)(Object *);
+int previousKeepBit;         // indicates if there is a object kept before along a single route
+void *(*gc_free)(Object *);  // function pointer to run 3 phases of garbage collecting
 
-/*
- * Algorithm changes:
- *  1) Visit the object even though it has been marked
- *  2) Only decide to continue walk through or not after checking the object's MARK status when visiting it
+/**
+ * freeObject
+ * ----------
+ * This is the main function which will called by user for garbage collecting object that wanted to be freed
+ * input:
+ *  obj     object that is going to be free (or not free depends on its condition)
  */
-
+void freeObject(Object *obj) {
+  gc_free = phase1Mark;
+  _gc_free((Object *)obj);
+  gc_free = phase2Mark;
+  _gc_free((Object *)obj);
+  gc_free = phase3Sweep;
+  _gc_free((Object *)obj);
+}
+ 
+/**
+ * phase1Mark
+ * ----------
+ * This function will reduce references number and clear keep flag (left by previous freeObject()) of an object
+ * 
+ * input:
+ *  obj     object that on going phase1Mark
+ * output:
+ *  NULL    if on going object is a NULL
+ *  obj     if on going object is non-NULL
+ */
 void *phase1Mark(Object *obj) {
   if(obj == NULL) return NULL;
 
-  obj->reference--;
+  obj->reference--; // reduce reference by 1 when just enter an object
  
   if(getMarkBit(obj) == 1) {
     return obj;
@@ -33,12 +54,16 @@ void *phase1Mark(Object *obj) {
   return obj;
 }
 
-/*
- *
- * obj1 -> obj2 
- *
- * both reference is reduced to 1, obj1 will become KEEPSTART, obj2 will become KEEPFOLLOW even though its reference is not zero
- *
+/**
+ * phase2Mark
+ * ----------
+ * This function will select which objects should be kept
+ * 
+ * input:
+ *  obj     object that on going phase2Mark
+ * output:
+ *  NULL    if on going object is a NULL
+ *  obj     if on going object is non-NULL
  */
 void *phase2Mark(Object *obj) {
   if(obj == NULL) return NULL;
@@ -64,11 +89,23 @@ void *phase2Mark(Object *obj) {
   return obj;
 }
 
+/**
+ * phase3Sweep
+ * -----------
+ * This function will decide which object should be kept
+ * 
+ * input:
+ *  obj     object that on going phase2Mark
+ * output:
+ *  NULL    if the object is a NULL or freed
+ *  obj     if the object is non-NULL or cannot be freed
+ */
 void *phase3Sweep(Object *obj) {
   void *old;
 
   if(obj == NULL) return NULL;
 
+  
   if(getKeepBit(obj) == 1) {
     previousKeepBit = 1;
   } else if(previousKeepBit == 1 && getKeepBit(obj) == 0) {
@@ -104,6 +141,17 @@ void *phase3Sweep(Object *obj) {
   return obj;
 }
 
+/**
+ * reduceReference
+ * -----------
+ * This function is used by phase3Sweep to reduce the reference number of an object
+ * 
+ * input:
+ *  obj     object that planned to reduce its reference number
+ * output:
+ *  NULL    if on going object is a NULL
+ *  obj     if on going object is non-NULL
+ */
 void *reduceReference(Object *obj) {
   if(obj == NULL) return NULL;  
   

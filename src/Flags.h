@@ -3,9 +3,9 @@
 
 #include "Object.h"
 
-#define MARK 1
-#define KEEPSTART 2
-#define KEEPFOLLOW 4
+#define MARK 1        // indicates object is visited before
+#define KEEPSTART 2   // indicates object should be keep and it is the first object to be kept in a single route/branch
+#define KEEPFOLLOW 4  // indicates object should be keep due to its reference is kept
 
 #define getMarkBit(x) ((x)->flag & MARK)
 #define getKeepStartBit(x) ((x)->flag & KEEPSTART) >> 1

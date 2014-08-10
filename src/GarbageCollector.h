@@ -6,6 +6,8 @@
 extern int previousKeepBit;
 extern void *(*gc_free)(Object *);
 
+void freeObject(Object *obj);
+
 void *phase1Mark(Object *obj);
 void *phase2Mark(Object *obj);
 void *phase3Sweep(Object *obj);

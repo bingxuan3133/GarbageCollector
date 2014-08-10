@@ -24,6 +24,7 @@ void test_objectANew_should_create_objectA_properly(void) {
   
   TEST_ASSERT_EQUAL(0, object->reference);
   TEST_ASSERT_EQUAL(0, object->flag);
+  TEST_ASSERT_EQUAL_PTR(NULL, object->ptrA);
   TEST_ASSERT_EQUAL_PTR(&objectAFree, object->free);
   
   free(object);
@@ -35,14 +36,13 @@ void test_objectANew_should_create_objectA_properly(void) {
 /*
  *  ptr -> object
  */
-void test_freeObjectA_will_not_walk_to_NULL(void) {
+void test_freeObjectA_given_ptrA_is_NULL_should_pass_NULL_to_gc_free(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 1, .flag = 0, .free = objectAFree, .ptrA = NULL};
-
   ptr = &object;
   gc_free = phase1Mark;
   
-  // Test object before recursion
+  _gc_free_ExpectAndReturn((Object *)NULL, NULL);
   
   _object_free((Object *)ptr);
 }
@@ -50,15 +50,13 @@ void test_freeObjectA_will_not_walk_to_NULL(void) {
 /*
  *  ptr -> object1 -> object2
  */
-void test_freeObjectA_walk_thru_object1_to_object2(void) {
+void test_freeObjectA_given_ptrA_is_object2_should_walk_through_from_object1_to_object2(void) {
 	ObjectA *ptr;
   ObjectA object2 = {.reference = 1, .flag = 0, .free = objectAFree, .ptrA = NULL};
   ObjectA object1 = {.reference = 1, .flag = 0, .free = objectAFree, .ptrA = (Object *)&object2};
-
   ptr = &object1;
   gc_free = phase1Mark;
-  
-  // Test object before recursion
+
   _gc_free_ExpectAndReturn((Object *)&object2, &object2);
   
   _object_free((Object *)ptr);

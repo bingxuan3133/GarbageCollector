@@ -26,7 +26,7 @@ void tearDown(void)
 /*
  *  ptr -> object
  */
-void test_phase1Mark(void) {
+void test_phase1Mark_given_reference_is_1_should_reduce_reference_to_0(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 1, .flag = 0, .free = objectAFree, .ptrA = NULL};
 
@@ -69,9 +69,11 @@ void test_phase1Mark_given_reference_is_2_should_reduce_reference_to_1(void) {
 }
 
 /*
- *  ptr -> object1 (marked)
+ *  ptr -> object1 (marked) ___
+ *              ^              \
+ *               \_____________/
  */
-void test_phase1Mark_should_do_nothing_if_object1_is_marked(void) {
+void test_phase1Mark_should_reduce_reference_to_0_even_though_object_is_marked(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 1, .flag = MARK, .free = objectAFree, .ptrA = NULL};
   
@@ -91,7 +93,7 @@ void test_phase1Mark_should_do_nothing_if_object1_is_marked(void) {
 //=================
 // Test phase2Mark
 //=================
-void test_phase2Mark(void) {
+void test_phase2Mark_given_an_object_reference_is_0_and_previousKeepBit_is_0_should_not_call_setKeepStartBit_or_setKeepFollowBit(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 0, .flag = 0, .free = objectAFree, .ptrA = NULL};
 
@@ -111,7 +113,7 @@ void test_phase2Mark(void) {
   TEST_ASSERT_EQUAL(0, previousKeepBit);
 }
 
-void test_phase2Mark_should_keep_object_if_its_reference_is_not_zero(void) {
+void test_phase2Mark_given_an_object_reference_is_1_and_previousKeepBit_is_0_should_call_setKeepStartBit(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 1, .flag = 0, .free = objectAFree, .ptrA = NULL};
 
@@ -132,7 +134,7 @@ void test_phase2Mark_should_keep_object_if_its_reference_is_not_zero(void) {
   TEST_ASSERT_EQUAL(1, previousKeepBit);
 }
 
-void test_phase2Mark_should_setKeepFollowBit_object_if_previous_object_KEEP_flag_is_1(void) {
+void test_phase2Mark_given_an_object_reference_is_0_but_previousKeepBit_is_1_should_call_setKeepFollowBit(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 0, .flag = 0, .free = objectAFree, .ptrA = NULL};
 
@@ -153,7 +155,7 @@ void test_phase2Mark_should_setKeepFollowBit_object_if_previous_object_KEEP_flag
   TEST_ASSERT_EQUAL(1, previousKeepBit);
 }
 
-void test_phase2Mark_should_set_previousKeepBit_to_0_when_returning_from_KEEPSTART_object(void) {
+void test_phase2Mark_given_an_object_previousKeepBit_is_1_even_though_its_reference_is_1_should_call_setKeepFollowBit(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 1, .flag = 0, .free = objectAFree, .ptrA = NULL};
 
@@ -177,7 +179,7 @@ void test_phase2Mark_should_set_previousKeepBit_to_0_when_returning_from_KEEPSTA
 //==================
 // Test phase3Sweep
 //==================
-void test_phase3Sweep_should_sweep_unkept_object(void) {
+void test_phase3Sweep_should_free_unkept_object(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 0, .flag = 0, .free = objectAFree, .ptrA = NULL};
 
@@ -198,7 +200,7 @@ void test_phase3Sweep_should_sweep_unkept_object(void) {
   // No tests assert since it is on mocking stage
 }
 
-void test_phase3Sweep_should_not_sweep_KEEPSTART_object_and_add_1_on_its_reference(void) {
+void test_phase3Sweep_given_object_flag_is_KEEPSTART_should_not_free_object_and_should_increase_object_reference_by_1(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 0, .flag = KEEPSTART, .free = objectAFree, .ptrA = NULL};
 
@@ -217,7 +219,7 @@ void test_phase3Sweep_should_not_sweep_KEEPSTART_object_and_add_1_on_its_referen
   TEST_ASSERT_EQUAL(1, object.reference);
 }
 
-void test_phase3Sweep_should_not_sweep_KEEPFOLLOW_object_and_add_1_on_its_reference(void) {
+void test_phase3Sweep_object_flag_is_KEEPFOLLOW_should_not_free_object_and_should_increase_object_reference_by_1(void) {
 	ObjectA *ptr;
   ObjectA object = {.reference = 0, .flag = KEEPFOLLOW, .free = objectAFree, .ptrA = NULL};
 
@@ -236,21 +238,26 @@ void test_phase3Sweep_should_not_sweep_KEEPFOLLOW_object_and_add_1_on_its_refere
   TEST_ASSERT_EQUAL(1, object.reference);
 }
 
-void test_phase3Sweep_should_not_sweep_object_if_previousKeepBit_is_1(void) {
+void test_phase3Sweep_given_previousKeepBit_is_1_should_not_free_object_but_should_call_setKeepFollowBit(void) {
 	ObjectA *ptr;
-  ObjectA object = {.reference = 0, .flag = KEEPSTART, .free = objectAFree, .ptrA = NULL};
+  ObjectA object = {.reference = 0, .flag = 0, .free = objectAFree, .ptrA = NULL};
 
   ptr = &object;
   gc_free = phase3Sweep;
   previousKeepBit = 1;
   
   // Mocking
+  setKeepFollowBit_Expect((Object *)&object);
   setMarkBit_Expect((Object *)&object);
   _object_free_Expect((Object *)&object);
   clearMarkBit_Expect((Object *)&object);
-
+  
+  // Ignore since setKeepFollowBit is only a mock
+  _object_free_Expect((Object *)&object);
+  _free_Expect((Object *)&object);
+  
   // Call S.U.T.
   _gc_free((Object *)ptr);
-
-  TEST_ASSERT_EQUAL(1, object.reference);
+  
+  // No test assert since setKeepFollowBit is only a mock
 }

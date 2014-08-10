@@ -5,6 +5,11 @@
 #include "GarbageCollector.h"
 #include "gc_free.h"
 
+/**
+ * objectBNew
+ * ----------
+ * This function creates an ObjectB object
+ */
 ObjectB *objectBNew() {
   ObjectB *newObjectB = malloc(sizeof(ObjectB));
   newObjectB->reference = 0;
@@ -16,12 +21,14 @@ ObjectB *objectBNew() {
   return newObjectB;
 }
 
+/** 
+ * User should at least prepare this example function in order to use garbage collector:
+ *
+ * objectBFree
+ * -----------
+ * This function walks through all the pointers in the object struct that prepared by user
+ */
 void objectBFree(Object *obj) {
-  if(((ObjectB *)obj)->ptrB1 != NULL) {
-    ((ObjectB *)obj)->ptrB1 = _gc_free((Object *)((ObjectB *)obj)->ptrB1);
-  }
-  
-  if(((ObjectB *)obj)->ptrB2 != NULL) {
-    ((ObjectB *)obj)->ptrB2 = _gc_free((Object *)((ObjectB *)obj)->ptrB2);
-  }
+  ((ObjectB *)obj)->ptrB1 = _gc_free((Object *)((ObjectB *)obj)->ptrB1);
+  ((ObjectB *)obj)->ptrB2 = _gc_free((Object *)((ObjectB *)obj)->ptrB2);
 }
