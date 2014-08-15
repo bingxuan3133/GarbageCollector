@@ -21,9 +21,16 @@ void objectDump(Object *obj) {
 }
 
 /*
+ * User have to use this function for every assignments in order to use garbage collector
+ *
  * objectAssign
  * ------------
  * This function increases reference number by 1 when an object is assign to a pointer
+ * 
+ * input:
+ *  obj   object that is to be assigned to a pointer
+ * return:
+ *  obj   address of object to be assigned
  */
 Object *objectAssign(Object *obj) {
   obj->reference++;

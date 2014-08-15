@@ -2,15 +2,15 @@
 #define Object_H
 
 /** 
+ * This is the general Object struct
+ */
+
+/** 
  * User should include this 3 elements (with correct sequence) at the top in any struct of the object they wanted to create:
  *
  * int reference;
  * int flag;
  * void (*free)(Object *);
- */
-
-/** 
- * This is the general Object struct
  */
 
 typedef struct Object Object;
